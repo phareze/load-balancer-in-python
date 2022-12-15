@@ -1,0 +1,26 @@
+import http.server
+import socketserver
+
+# Create a list of servers to load balance
+servers = ["server1.com", "server2.com", "server3.com"]
+
+# Create a request handler that will forward requests to the next server in the list
+class LoadBalancerHandler(http.server.BaseHTTPRequestHandler):
+    def do_GET(self):
+        # Get the next server from the list
+        server = servers[0]
+        # Remove the server from the list so the next request will be sent to the next server
+        servers.remove(server)
+        # Add the server back to the end of the list
+        servers.append(server)
+
+        # Forward the request to the selected server
+        self.send_response(301)
+        self.send_header("Location", server)
+        self.end_headers()
+
+# Create an HTTP server and specify the request handler
+httpd = socketserver.TCPServer(("", 80), LoadBalancerHandler)
+
+# Start the server
+httpd.serve_forever()
